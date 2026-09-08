@@ -959,7 +959,131 @@ kexts = [
             "owner": "acidanthera",
             "repo": "RTCMemoryFixup"
         }
-    )
+    ),
+
+    # --- Legacy macOS 10.8 (Mountain Lion) - 10.12 (Sierra) kexts ---
+
+    KextInfo(
+        name = "FakeSMC",
+        description = "Legacy SMC emulator predating VirtualSMC, required baseline on 10.8-10.12 builds",
+        category = "Required (Legacy)",
+        min_darwin_version = "12.0.0",
+        max_darwin_version = "16.99.99",
+        conflict_group_id = "SMC",
+        github_repo = {
+            "owner": "RehabMan",
+            "repo": "OS-X-FakeSMC-kozlek"
+        }
+    ),
+    KextInfo(
+        name = "NullCPUPowerManagement",
+        description = "Disables native CPU power management for unsupported or very old CPUs on legacy macOS",
+        category = "Extras",
+        min_darwin_version = "12.0.0",
+        max_darwin_version = "16.99.99",
+        github_repo = {
+            "owner": "RehabMan",
+            "repo": "os-x-null-cpu-power-management"
+        }
+    ),
+    KextInfo(
+        name = "FakePCIID",
+        description = "Base kext enabling PCI ID spoofing for unsupported devices on legacy macOS",
+        category = "Extras",
+        min_darwin_version = "12.0.0",
+        max_darwin_version = "17.99.99",
+        github_repo = {
+            "owner": "RehabMan",
+            "repo": "OS-X-Fake-PCI-ID"
+        }
+    ),
+    KextInfo(
+        name = "FakePCIID_Broadcom_WiFi",
+        description = "Spoofs unsupported Broadcom Wi-Fi cards as natively supported IDs on legacy macOS",
+        category = "Wi-Fi",
+        min_darwin_version = "12.0.0",
+        max_darwin_version = "17.99.99",
+        requires_kexts = ["FakePCIID"],
+        github_repo = {
+            "owner": "RehabMan",
+            "repo": "OS-X-Fake-PCI-ID"
+        }
+    ),
+    KextInfo(
+        name = "VoodooHDA",
+        description = "Legacy generic HD audio kext used before AppleALC matured, for otherwise unsupported codecs on 10.8-10.12",
+        category = "Audio",
+        min_darwin_version = "12.0.0",
+        max_darwin_version = "16.99.99",
+        github_repo = {
+            "owner": "VoodooHDA",
+            "repo": "MacOS"
+        }
+    ),
 ]
 
 kext_index_by_name = {kext.name: index for index, kext in enumerate(kexts)}
+
+
+def _parse_darwin_version(version):
+    """
+    Normalize a darwin version value into a comparable tuple of ints.
+    Accepts version strings like "18.0.0", or an already-tuple value
+    (e.g. the os_data-derived defaults). Falls back to (0, 0, 0) for
+    anything unrecognized so comparisons never raise.
+    """
+    if isinstance(version, tuple):
+        if all(isinstance(part, int) for part in version) and version:
+            return version
+        # Tuple of strings, or empty tuple -> fall through to string handling
+        version = ".".join(str(part) for part in version) if version else "0.0.0"
+
+    if isinstance(version, str):
+        parts = version.split(".")
+        result = []
+        for part in parts:
+            try:
+                result.append(int(part))
+            except ValueError:
+                result.append(0)
+        while len(result) < 3:
+            result.append(0)
+        return tuple(result[:3])
+
+    return (0, 0, 0)
+
+
+def get_kexts_by_category(category):
+    """
+    Return all KextInfo entries matching the given category (case-insensitive).
+    """
+    return [kext for kext in kexts if kext.category.lower() == category.lower()]
+
+
+def get_kext_by_name(name):
+    """
+    Return the KextInfo entry matching the given name, or None if not found.
+    Uses the existing kext_index_by_name lookup table.
+    """
+    index = kext_index_by_name.get(name)
+    if index is None:
+        return None
+    return kexts[index]
+
+
+def get_kexts_by_darwin_version(target_version):
+    """
+    Return all KextInfo entries whose [min_darwin_version, max_darwin_version]
+    range includes target_version (inclusive on both ends).
+
+    target_version may be a version string (e.g. "16.0.0") or a tuple.
+    """
+    target = _parse_darwin_version(target_version)
+
+    matches = []
+    for kext in kexts:
+        min_version = _parse_darwin_version(kext.min_darwin_version)
+        max_version = _parse_darwin_version(kext.max_darwin_version)
+        if min_version <= target <= max_version:
+            matches.append(kext)
+    return matches
