@@ -125,6 +125,12 @@ class CompatibilityChecker:
                     pass
                 elif device_id.startswith("8A"):
                     min_version = "19.4.0"
+                # TODO: Replace with real device ID prefixes/lists from gpu_data / pci_data.
+                # Placeholder branch for pre-HD Graphics Intel GMA-era iGPUs (e.g. GMA 900-4500MHD),
+                # which only ever ran on Mountain Lion (10.8) through Sierra (10.12) and were dropped
+                # from macOS starting with High Sierra.
+                elif self.utils.contains_any(getattr(gpu_data, "IntelGMACodenames", ()), gpu_codename):
+                    max_version = "16.99.99"
                 else:
                     max_version = min_version = None
 
@@ -169,6 +175,12 @@ class CompatibilityChecker:
                 elif gpu_codename in ("Pascal", "Maxwell", "Fermi", "Tesla"):
                     max_version = "17.99.99"
                     min_version = "17.0.0"
+                # TODO: Replace with real codename list from gpu_data once confirmed.
+                # Placeholder branch for pre-Fermi NVIDIA GPUs (e.g. GeForce 8/9 series, GT 200),
+                # which only ran on Mountain Lion (10.8) through Sierra (10.12).
+                elif self.utils.contains_any(getattr(gpu_data, "NVIDIALegacyCodenames", ()), gpu_codename):
+                    max_version = "16.99.99"
+                    min_version = "12.0.0"
                 else:
                     max_version = min_version = None
 
