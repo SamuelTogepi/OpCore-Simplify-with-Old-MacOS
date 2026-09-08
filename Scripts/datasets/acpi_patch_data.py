@@ -135,5 +135,38 @@ patches = [
         name = "XOSI",
         description = "Spoofs the operating system to Windows, enabling devices locked behind non-Windows systems on macOS",
         function_name = "operating_system_patch"
-    )
+    ),
+
+    # --- Legacy macOS 10.8 (Mountain Lion) - 10.12 (Sierra) patches ---
+
+    PatchInfo(
+        name = "Legacy RTC",
+        description = "Force RTC range fix for pre-2013 boards booting legacy macOS (10.8-10.12), separate from RTCAWAC which targets AWAC-only modern boards",
+        function_name = "fix_legacy_rtc_range"
+    ),
+    PatchInfo(
+        name = "Legacy SMBus",
+        description = "Older SMBus controller fix for chipsets predating what BUS0 covers, required for AppleSMBus on 10.8-10.12 systems",
+        function_name = "fix_legacy_smbus"
+    ),
+    PatchInfo(
+        name = "NVRAM Fallback",
+        description = "Enables emulated NVRAM fallback behavior for systems without native NVRAM support, required on pre-2013 Macs and older SMBIOS targeting 10.8-10.12",
+        function_name = "enable_nvram_fallback"
+    ),
+    PatchInfo(
+        name = "Legacy USB Port Limit",
+        description = "Applies the 15-port USB limit workaround needed on 10.8-10.10 before the port limit patch was built into later Lilu/USBMap tooling",
+        function_name = "fix_legacy_usb_port_limit"
+    ),
+    PatchInfo(
+        name = "Legacy CPU PM (Sandy/Ivy Bridge)",
+        description = "Generates SSDT-PM style CPU power management tables required for Sandy Bridge and Ivy Bridge CPUs running 10.8-10.9",
+        function_name = "generate_legacy_cpu_pm"
+    ),
+    PatchInfo(
+        name = "AppleALC Legacy Layout",
+        description = "Marker patch noting legacy audio codec layout-id requirements for AppleALC on 10.8-10.12 targets",
+        function_name = "legacy_audio_layout_marker"
+    ),
 ]
