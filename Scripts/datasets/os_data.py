@@ -6,6 +6,11 @@ class macOSVersionInfo:
         self.release_status = release_status
 
 macos_versions = [
+    macOSVersionInfo("Mountain Lion", "10.8"),
+    macOSVersionInfo("Mavericks", "10.9"),
+    macOSVersionInfo("Yosemite", "10.10"),
+    macOSVersionInfo("El Capitan", "10.11"),
+    macOSVersionInfo("Sierra", "10.12"),
     macOSVersionInfo("High Sierra", "10.13"),
     macOSVersionInfo("Mojave", "10.14"),
     macOSVersionInfo("Catalina", "10.15"),
